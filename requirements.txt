@@ -1,0 +1,22 @@
+# Safety Stock Analyzer - Professional Desktop Application
+# Python dependencies for PyQt6-based desktop app
+
+# Core GUI framework
+PyQt6>=6.4.0
+
+# Data analysis and manipulation
+pandas>=1.5.0
+numpy>=1.21.0
+openpyxl>=3.0.0
+
+# Data visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Excel file handling
+xlrd>=2.0.0
+
+# Optional: For creating standalone executable
+# pyinstaller>=5.0.0
+
+
