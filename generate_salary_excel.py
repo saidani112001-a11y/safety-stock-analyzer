@@ -144,64 +144,18 @@ def create_salary_workbook() -> Workbook:
         ws.cell(row=row, column=col).border = border
     row += 1
 
-    # IR calculation by monthly brackets
-    # Brackets (monthly):
-    # 0 – 2,500: 0%
-    # 2,501 – 4,166: 10%
-    # 4,167 – 5,000: 20%
-    # 5,001 – 6,666: 30%
-    # 6,667 – 15,000: 34%
-    # > 15,000: 38%
-
-    # Helper: tax per bracket via Excel formula using MAX/MIN
-    def tranche(lower: int, upper: int | None, rate: float) -> str:
-        if upper is None:
-            return f"=MAX(0,{sni_cell}-{lower})*{rate}"
-        return f"=MAX(0,MIN({sni_cell},{upper})-{lower})*{rate}"
-
-    ws.append(["IR tranche 0%", None, "jusqu'à 2 500"])
-    ws.cell(row=row, column=2).value = tranche(0, 2500, 0.0)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    ws.append(["IR tranche 10%", None, "2 501 à 4 166"])
-    ws.cell(row=row, column=2).value = tranche(2500, 4166, 0.10)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    ws.append(["IR tranche 20%", None, "4 167 à 5 000"])
-    ws.cell(row=row, column=2).value = tranche(4166, 5000, 0.20)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    ws.append(["IR tranche 30%", None, "5 001 à 6 666"])
-    ws.cell(row=row, column=2).value = tranche(5000, 6666, 0.30)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    ws.append(["IR tranche 34%", None, "6 667 à 15 000"])
-    ws.cell(row=row, column=2).value = tranche(6666, 15000, 0.34)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    ws.append(["IR tranche 38%", None, "> 15 000"])
-    ws.cell(row=row, column=2).value = tranche(15000, None, 0.38)
-    for col in range(1, 4):
-        ws.cell(row=row, column=col).border = border
-    row += 1
-
-    first_ir_row = sni_row + 1
-    last_ir_row = row - 1
-
-    ws.append(["IR brut (somme des tranches)", None, "Somme IR tranches"])
+    # IR calculation using nested IF (décote method) based on SNI
+    ws.append(["IR brut", None, "Barème avec décote (formule fournie)"])
     ir_brut_row = row
     ir_brut_cell = f"$B${ir_brut_row}"
-    ws.cell(row=row, column=2).value = f"=SUM($B${first_ir_row}:$B${last_ir_row})"
+    ws.cell(row=row, column=2).value = (
+        f"=IF({sni_cell}<=3333,0,"
+        f"IF(AND({sni_cell}>=3334,{sni_cell}<=5000),(({sni_cell}*10%)-333.33),"
+        f"(IF(AND({sni_cell}>=5001,{sni_cell}<=6667),(({sni_cell}*20%)-833.33),"
+        f"IF(AND({sni_cell}>=6668,{sni_cell}<=8333),(({sni_cell}*30%)-1500),"
+        f"IF(AND({sni_cell}>=8334,{sni_cell}<=15000),(({sni_cell}*34%)-1833.33),"
+        f"IF({sni_cell}>=15000.08,(({sni_cell}*38%)-2283.33),0)))))))"
+    )
     for col in range(1, 4):
         ws.cell(row=row, column=col).border = border
     row += 1
